@@ -1,0 +1,11 @@
+<resources>
+    <color name="glass_dark">#66000000</color>
+    <color name="glass_light">#66FFFFFF</color>
+    <color name="panel_dark">#99000000</color>
+    <color name="panel_light">#CCFFFFFF</color>
+    <color name="text_dark">#FFFFFFFF</color>
+    <color name="text_light">#FF111111</color>
+    <color name="accent">#7C8CFF</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>
