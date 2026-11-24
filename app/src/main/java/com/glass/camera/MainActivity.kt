@@ -163,8 +163,8 @@ class MainActivity : AppCompatActivity() {
     private fun qualitySelector(): QualitySelector {
         return when (quality) {
             QPreset.UHD4K -> QualitySelector.from(Quality.UHD)
-            QPreset.Q2K, Quality.FHD -> QualitySelector.from(Quality.FHD)
-            Quality.HD -> QualitySelector.from(Quality.HD)
+            QPreset.Q2K, QPreset.FHD -> QualitySelector.from(Quality.FHD)
+            QPreset.HD -> QualitySelector.from(Quality.HD)
             QPreset.P480, QPreset.P360 -> QualitySelector.from(Quality.SD)
         }
     }
