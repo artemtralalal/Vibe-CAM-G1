@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111111">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Настройки" android:textColor="#FFFFFF" android:textSize="28sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Стиль" android:textColor="#AAAAAA" android:textSize="14sp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal">
+            <TextView android:id="@+id/styleDark" style="@style/MenuBtn" android:text="Тёмный" />
+            <TextView android:id="@+id/styleLight" style="@style/MenuBtn" android:text="Светлый" />
+        </LinearLayout>
+        <EditText android:id="@+id/customColor" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:hint="Свой цвет, например #1A1A1A" android:textColor="#FFFFFF" android:textColorHint="#777777" android:background="@drawable/glass_pill" android:padding="12dp" />
+        <TextView android:id="@+id/applyColor" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:background="@drawable/glass_pill" android:paddingHorizontal="14dp" android:paddingVertical="10dp" android:text="Применить цвет" android:textColor="#FFFFFF" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Акцент" android:textColor="#AAAAAA" android:textSize="14sp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal">
+            <TextView android:id="@+id/accentBlue" style="@style/MenuBtn" android:text="Синий" />
+            <TextView android:id="@+id/accentPink" style="@style/MenuBtn" android:text="Розовый" />
+            <TextView android:id="@+id/accentGreen" style="@style/MenuBtn" android:text="Зелёный" />
+        </LinearLayout>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Звук затвора" android:textColor="#AAAAAA" android:textSize="14sp" />
+        <TextView android:id="@+id/soundStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="По умолчанию" android:textColor="#FFFFFF" />
+        <TextView android:id="@+id/pickSound" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:background="@drawable/glass_pill" android:paddingHorizontal="14dp" android:paddingVertical="10dp" android:text="Выбрать свой звук" android:textColor="#FFFFFF" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Качество / FPS" android:textColor="#AAAAAA" android:textSize="14sp" />
+        <TextView android:id="@+id/fpsInfo" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#FFFFFF" android:textSize="14sp" android:text="Фото: до максимального качества устройства\nВидео: HD/FHD/4K в зависимости от устройства\nFPS: 30/60 (120 если поддерживается устройством)" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="О приложении" android:textColor="#AAAAAA" android:textSize="14sp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="#FFFFFF" android:text="Glass Camera 1.0.0\nКастомная камера с glass UI, CameraX, режимами фото/видео, зумом, фокусом, Camera Lock и настройками стиля." />
+
+    </LinearLayout>
+</ScrollView>
