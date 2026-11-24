@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <ImageView
+        android:id="@+id/photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/glass_sheet"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="16dp">
+        <TextView android:id="@+id/btnEdit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/glass_pill" android:paddingHorizontal="18dp" android:paddingVertical="10dp" android:text="Изменить" android:textColor="#FFFFFF" />
+        <TextView android:id="@+id/btnClose" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:background="@drawable/glass_pill" android:paddingHorizontal="18dp" android:paddingVertical="10dp" android:text="Закрыть" android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/aiSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/glass_sheet"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Обработать с помощью ИИ" android:textColor="#FFFFFF" android:textSize="16sp" android:textStyle="bold" />
+        <TextView android:id="@+id/aiChatGPT" style="@style/QualityRow" android:text="ChatGPT" />
+        <TextView android:id="@+id/aiGemini" style="@style/QualityRow" android:text="Gemini" />
+        <TextView android:id="@+id/aiDeepSeek" style="@style/QualityRow" android:text="DeepSeek" />
+        <TextView android:id="@+id/aiQwen" style="@style/QualityRow" android:text="Qwen" />
+    </LinearLayout>
+</FrameLayout>
