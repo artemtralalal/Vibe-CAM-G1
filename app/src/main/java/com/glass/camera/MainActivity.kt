@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private var cameraLock = false
     private var lockedRotation: Int? = null
     private var shutterPlayer: MediaPlayer? = null
+    private var lastPhotoUri: android.net.Uri? = null
 
     enum class Mode { PHOTO, VIDEO }
     enum class Aspect { RATIO_9_16, RATIO_4_3, RATIO_1_1 }
@@ -70,6 +71,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUi() {
         b.btnArrow.setOnClickListener { toggleDrawer() }
+        b.btnGallery.setOnClickListener { openGallery() }
         b.menuSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)); hideOverlays() }
         b.menuLive.setOnClickListener { liveOn = !liveOn; toast(if (liveOn) "Live включён" else "Live выключен"); styleTop() }
         b.btnLive.setOnClickListener { b.menuLive.performClick() }
@@ -123,6 +125,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val future = ProcessCameraProvider.getInstance(this)
+        b.startupBlur.animate().alpha(0f).setStartDelay(250).setDuration(700).withEndAction { b.startupBlur.visibility = View.GONE }.start()
         future.addListener({
             cameraProvider = future.get()
             bindCamera()
@@ -173,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         val ic = imageCapture ?: return
         playShutter()
         animateShutter()
+        flashCapture()
         val name = "GLASS_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -182,10 +186,31 @@ class MainActivity : AppCompatActivity() {
         val out = ImageCapture.OutputFileOptions.Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values).build()
         ic.takePicture(out, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
             override fun onError(exc: ImageCaptureException) { toast("Ошибка фото: ${exc.message}") }
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) { toast("Фото сохранено") }
+            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                val uri = output.savedUri
+                if (uri != null) { lastPhotoUri = uri; showGalleryThumb(uri); flyToGallery() }
+                toast("Фото сохранено")
+            }
         })
     }
 
+    private fun flashCapture() {
+        b.flashView.visibility = View.VISIBLE
+        b.flashView.alpha = 0f
+        b.flashView.animate().alpha(0.85f).setDuration(60).withEndAction {
+            b.flashView.animate().alpha(0f).setDuration(180).withEndAction { b.flashView.visibility = View.GONE }.start()
+        }.start()
+    }
+
+    private fun showGalleryThumb(uri: android.net.Uri) {
+        try { b.btnGallery.setPadding(2,2,2,2); b.btnGallery.setImageURI(uri) } catch (_: Exception) {}
+    }
+
+    private fun flyToGallery() {
+        b.btnGallery.animate().scaleX(0.75f).scaleY(0.75f).setDuration(120).withEndAction {
+            b.btnGallery.animate().scaleX(1f).scaleY(1f).setDuration(180).start()
+        }.start()
+    }
     private fun toggleVideo() {
         val vc = videoCapture ?: return
         val cur = recording
@@ -268,6 +293,17 @@ class MainActivity : AppCompatActivity() {
         styleTop()
     }
 
+    private fun openGallery() {
+        val uri = lastPhotoUri
+        if (uri == null) { toast("Сначала сделай фото"); return }
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(Intent.createChooser(intent, "Открыть в галерее"))
+        } catch (_: Exception) {
+            try { startActivity(Intent(this, GalleryActivity::class.java).putExtra("uri", uri.toString())) } catch (_: Exception) { toast("Не удалось открыть фото") }
+        }
+    }
+
     private fun updateModeUi() {
         b.modeLabel.text = if (mode == Mode.PHOTO) "PHOTO" else "VIDEO"
         b.shutterInner.setBackgroundResource(if (mode == Mode.PHOTO) R.drawable.shutter_inner else R.drawable.shutter_rec_idle)
@@ -277,10 +313,9 @@ class MainActivity : AppCompatActivity() {
         try {
             shutterPlayer?.release()
             val custom = getSharedPreferences("glass", MODE_PRIVATE).getString("shutterSoundPath", null)
-            shutterPlayer = if (!custom.isNullOrBlank() && java.io.File(custom).exists()) MediaPlayer().apply { setDataSource(custom); prepare() } else MediaPlayer.create(this, R.raw.shutter)
-            shutterPlayer?.setOnCompletionListener { it.release(); if (shutterPlayer == it) shutterPlayer = null }
-            shutterPlayer?.start()
-        } catch (_: Exception) {}
+            val mp = if (!custom.isNullOrBlank() && java.io.File(custom).exists()) MediaPlayer().apply { setDataSource(custom); setAudioAttributes(android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()); prepare() } else MediaPlayer.create(this, R.raw.shutter)
+            if (mp != null) { mp.setVolume(1f,1f); mp.setOnCompletionListener { it.release(); if (shutterPlayer == it) shutterPlayer = null }; shutterPlayer = mp; mp.start() } else { android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100).startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 120) }
+        } catch (_: Exception) { try { android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100).startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 120) } catch (_: Exception) {} }
     }
 
     private fun animateShutter() {
