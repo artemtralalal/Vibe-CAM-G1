@@ -294,7 +294,6 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("glass", MODE_PRIVATE)
         val light = prefs.getString("style", "dark") == "light"
         val text = if (light) "#111111" else "#FFFFFF"
-        listOf(b.topBar, b.zoomCapsule, b.bottomPanel, b.drawer, b.qualitySheet, b.lockBadge).forEach { applyBlur(it, 18f) }
         b.modeLabel.setTextColor(Color.parseColor(text))
         b.btnArrow.setTextColor(Color.parseColor(text))
         b.lockBadge.setTextColor(Color.parseColor(text))
