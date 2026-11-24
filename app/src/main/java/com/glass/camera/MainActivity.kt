@@ -140,12 +140,16 @@ class MainActivity : AppCompatActivity() {
             Aspect.RATIO_4_3 -> AspectRatio.RATIO_4_3
             Aspect.RATIO_1_1 -> AspectRatio.RATIO_4_3
         }
-        val preview = Preview.Builder().setTargetAspectRatio(ratio).build().also {
+        val rot = b.previewView.display?.rotation ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.rotation
+        val preview = Preview.Builder().setTargetAspectRatio(ratio)
+            .setTargetRotation(rot).build().also {
             it.setSurfaceProvider(b.previewView.surfaceProvider)
         }
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(if (quality == QPreset.UHD4K || quality == QPreset.Q2K) ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY else ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setJpegQuality(95)
             .setTargetAspectRatio(ratio)
+            .setTargetRotation(rot)
             .build()
         if (cameraLock) { lockedRotation?.let { imageCapture?.targetRotation = it } }
         val recorder = Recorder.Builder().setQualitySelector(qualitySelector()).build()
@@ -174,6 +178,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         val ic = imageCapture ?: return
+        ic.targetRotation = b.previewView.display?.rotation ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.rotation
         playShutter()
         animateShutter()
         flashCapture()
@@ -312,10 +317,17 @@ class MainActivity : AppCompatActivity() {
     private fun playShutter() {
         try {
             shutterPlayer?.release()
-            val custom = getSharedPreferences("glass", MODE_PRIVATE).getString("shutterSoundPath", null)
-            val mp = if (!custom.isNullOrBlank() && java.io.File(custom).exists()) MediaPlayer().apply { setDataSource(custom); setAudioAttributes(android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()); prepare() } else MediaPlayer.create(this, R.raw.shutter)
-            if (mp != null) { mp.setVolume(1f,1f); mp.setOnCompletionListener { it.release(); if (shutterPlayer == it) shutterPlayer = null }; shutterPlayer = mp; mp.start() } else { android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100).startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 120) }
-        } catch (_: Exception) { try { android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100).startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 120) } catch (_: Exception) {} }
+            val prefs = getSharedPreferences("glass", MODE_PRIVATE)
+            val builtIn = prefs.getString("shutterBuiltIn", "default") ?: "default"
+            val custom = prefs.getString("shutterSoundPath", null)
+            val mp = if (builtIn == "custom" && !custom.isNullOrBlank() && java.io.File(custom).exists()) {
+                MediaPlayer().apply { setDataSource(custom); setAudioAttributes(android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()); prepare() }
+            } else {
+                val res = when (builtIn) { "soft" -> R.raw.shutter_soft; "loud" -> R.raw.shutter_loud; else -> R.raw.shutter }
+                MediaPlayer.create(this, res)
+            }
+            if (mp != null) { mp.setVolume(1f,1f); mp.setOnCompletionListener { it.release(); if (shutterPlayer == it) shutterPlayer = null }; shutterPlayer = mp; mp.start() }
+        } catch (_: Exception) {}
     }
 
     private fun animateShutter() {
