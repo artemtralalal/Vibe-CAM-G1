@@ -267,3 +267,65 @@ class MainActivity : AppCompatActivity() {
         toast(if (cameraLock) "Camera Lock: ориентация зафиксирована" else "Camera Lock выключен")
         styleTop()
     }
+
+    private fun updateModeUi() {
+        b.modeLabel.text = if (mode == Mode.PHOTO) "PHOTO" else "VIDEO"
+        b.shutterInner.setBackgroundResource(if (mode == Mode.PHOTO) R.drawable.shutter_inner else R.drawable.shutter_rec_idle)
+    }
+
+    private fun playShutter() {
+        try {
+            shutterPlayer?.release()
+            val custom = getSharedPreferences("glass", MODE_PRIVATE).getString("shutterSoundPath", null)
+            shutterPlayer = if (!custom.isNullOrBlank() && java.io.File(custom).exists()) MediaPlayer().apply { setDataSource(custom); prepare() } else MediaPlayer.create(this, R.raw.shutter)
+            shutterPlayer?.setOnCompletionListener { it.release(); if (shutterPlayer == it) shutterPlayer = null }
+            shutterPlayer?.start()
+        } catch (_: Exception) {}
+    }
+
+    private fun animateShutter() {
+        b.shutterInner.animate().scaleX(0.85f).scaleY(0.85f).setDuration(80).withEndAction {
+            b.shutterInner.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+        }.start()
+    }
+
+    private fun applyBlur(v: View, radius: Float = 20f) { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) try { v.setRenderEffect(android.graphics.RenderEffect.createBlurEffect(radius, radius, android.graphics.Shader.TileMode.CLAMP)) } catch (_: Exception) {} }
+    private fun applyStyle() {
+        val prefs = getSharedPreferences("glass", MODE_PRIVATE)
+        val light = prefs.getString("style", "dark") == "light"
+        val text = if (light) "#111111" else "#FFFFFF"
+        listOf(b.topBar, b.zoomCapsule, b.bottomPanel, b.drawer, b.qualitySheet, b.lockBadge).forEach { applyBlur(it, 18f) }
+        b.modeLabel.setTextColor(Color.parseColor(text))
+        b.btnArrow.setTextColor(Color.parseColor(text))
+        b.lockBadge.setTextColor(Color.parseColor(text))
+        b.drawer.setBackgroundColor(Color.parseColor(if (light) "#EEFFFFFF" else "#99111111"))
+        b.qualitySheet.setBackgroundColor(Color.parseColor(if (light) "#EEFFFFFF" else "#99111111"))
+        b.drawerTitle.setTextColor(Color.parseColor(text))
+        b.root.setBackgroundColor(Color.BLACK)
+        try { b.shutterInner.background.setTint(Color.parseColor(prefs.getString("accent", "#7C8CFF") ?: "#7C8CFF")) } catch (_: Exception) {}
+        styleTop()
+    }
+
+    private fun styleTop() {
+        val prefs = getSharedPreferences("glass", MODE_PRIVATE)
+        val accent = try { Color.parseColor(prefs.getString("accent", "#7C8CFF")) } catch (_: Exception) { Color.parseColor("#7C8CFF") }
+        b.btnLive.setTextColor(if (liveOn) accent else Color.WHITE)
+        b.btnLock.setTextColor(if (cameraLock) accent else Color.WHITE)
+    }
+
+    private fun hideSystemUi() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val ctrl = WindowInsetsControllerCompat(window, b.root)
+        ctrl.hide(WindowInsetsCompat.Type.systemBars())
+        ctrl.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+
+    private fun allGranted() = requiredPermissions().all { ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED }
+    private fun requiredPermissions() = mutableListOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO).apply {
+        if (Build.VERSION.SDK_INT <= 28) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }.toTypedArray()
+    private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
+
+    override fun onResume() { super.onResume(); applyStyle(); hideSystemUi() }
+    override fun onDestroy() { super.onDestroy(); cameraExecutor.shutdown(); shutterPlayer?.release() }
+}
