@@ -29,8 +29,23 @@ class SettingsActivity : AppCompatActivity() {
         b.accentBlue.setOnClickListener { setAccent("#7C8CFF") }
         b.accentPink.setOnClickListener { setAccent("#FF7CA8") }
         b.accentGreen.setOnClickListener { setAccent("#4DDC88") }
+
+        b.soundDefault.setOnClickListener { setBuiltIn("default", "Щелчок") }
+        b.soundSoft.setOnClickListener { setBuiltIn("soft", "Мягкий") }
+        b.soundLoud.setOnClickListener { setBuiltIn("loud", "Громкий") }
         b.pickSound.setOnClickListener { showSoundPicker() }
-        b.soundStatus.text = prefs.getString("shutterSound", "По умолчанию") ?: "По умолчанию"
+        updateSoundStatus()
+    }
+
+    private fun setBuiltIn(id: String, name: String) {
+        prefs.edit().putString("shutterBuiltIn", id).putString("shutterSound", name).apply()
+        updateSoundStatus(); toast("Звук: $name")
+    }
+
+    private fun updateSoundStatus() {
+        val name = prefs.getString("shutterSound", "Щелчок") ?: "Щелчок"
+        val builtIn = prefs.getString("shutterBuiltIn", "default") ?: "default"
+        b.soundStatus.text = if (builtIn == "custom") "Свой: $name" else "Выбран: $name"
     }
 
     private fun setAccent(c: String) { prefs.edit().putString("accent", c).apply(); toast("Акцент: $c") }
@@ -53,8 +68,8 @@ class SettingsActivity : AppCompatActivity() {
             .setTitle("Выбери звук затвора")
             .setAdapter(ArrayAdapter(this, android.R.layout.simple_list_item_1, names)) { _, which ->
                 val f = files[which]
-                prefs.edit().putString("shutterSoundPath", f.absolutePath).putString("shutterSound", f.name).apply()
-                b.soundStatus.text = f.name
+                prefs.edit().putString("shutterBuiltIn", "custom").putString("shutterSoundPath", f.absolutePath).putString("shutterSound", f.name).apply()
+                updateSoundStatus()
                 toast("Звук выбран: ${f.name}")
             }
             .setNegativeButton("Отмена", null)
