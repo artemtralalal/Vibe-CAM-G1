@@ -13,6 +13,21 @@
         app:scaleType="fitCenter" />
 
     <View
+        android:id="@+id/startupBlur"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CC000000"
+        android:visibility="visible" />
+
+    <View
+        android:id="@+id/flashView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFFFF"
+        android:alpha="0"
+        android:visibility="gone" />
+
+    <View
         android:id="@+id/focusRing"
         android:layout_width="72dp"
         android:layout_height="72dp"
@@ -102,15 +117,14 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <TextView
+            <ImageView
                 android:id="@+id/btnGallery"
                 android:layout_width="52dp"
                 android:layout_height="52dp"
                 android:background="@drawable/glass_circle"
-                android:gravity="center"
-                android:text="▣"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp" />
+                android:scaleType="centerCrop"
+                android:padding="10dp"
+                android:src="@android:drawable/ic_menu_gallery" />
 
             <FrameLayout
                 android:id="@+id/shutter"
