@@ -140,21 +140,15 @@ class MainActivity : AppCompatActivity() {
             Aspect.RATIO_4_3 -> AspectRatio.RATIO_4_3
             Aspect.RATIO_1_1 -> AspectRatio.RATIO_4_3
         }
-        val rot = b.previewView.display?.rotation ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.rotation
-        val preview = Preview.Builder().setTargetAspectRatio(ratio)
-            .setTargetRotation(rot).build().also {
+        val preview = Preview.Builder().setTargetAspectRatio(ratio).build().also {
             it.setSurfaceProvider(b.previewView.surfaceProvider)
         }
         imageCapture = ImageCapture.Builder()
-            .setCaptureMode(if (quality == QPreset.UHD4K || quality == QPreset.Q2K) ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY else ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setJpegQuality(95)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setTargetAspectRatio(ratio)
-            .setTargetRotation(rot)
             .build()
-        if (cameraLock) { lockedRotation?.let { imageCapture?.targetRotation = it } }
         val recorder = Recorder.Builder().setQualitySelector(qualitySelector()).build()
         videoCapture = VideoCapture.withOutput(recorder)
-        if (cameraLock) { lockedRotation?.let { videoCapture?.targetRotation = it } }
         val selector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         try {
             camera = provider.bindToLifecycle(this, selector, preview, imageCapture, videoCapture)
@@ -166,7 +160,6 @@ class MainActivity : AppCompatActivity() {
             toast("Ошибка камеры: ${e.message}")
         }
     }
-
     private fun qualitySelector(): QualitySelector {
         return when (quality) {
             QPreset.UHD4K -> QualitySelector.from(Quality.UHD)
@@ -178,7 +171,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         val ic = imageCapture ?: return
-        ic.targetRotation = b.previewView.display?.rotation ?: @Suppress("DEPRECATION") windowManager.defaultDisplay.rotation
         playShutter()
         animateShutter()
         flashCapture()
